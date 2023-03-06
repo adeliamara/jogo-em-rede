@@ -1,0 +1,28 @@
+{
+  "name": "jogo-em-rede",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u0000j\u0000o\u0000g\u0000o\u0000-\u0000e\u0000m\u0000-\u0000r\u0000e\u0000d\u0000e\u0000\r\u0000 \u0000",
+  "main": "cliente.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node teste.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adeliamara/jogo-em-rede.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/adeliamara/jogo-em-rede/issues"
+  },
+  "homepage": "https://github.com/adeliamara/jogo-em-rede#readme",
+  "dependencies": {
+    "p5": "^1.6.0",
+    "ts-node": "^10.9.1"
+  },
+  "devDependencies": {
+    "@types/p5": "^1.5.0"
+  }
+}
