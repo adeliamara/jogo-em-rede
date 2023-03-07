@@ -1,8 +1,9 @@
-import net, { Socket } from 'net';
-
-
-export interface Client {
-    socket: Socket;
-    nickname: string;
-    boatsPositioned: boolean;
-  }
+export interface User {
+  user_id: number;
+  nickname: string;
+  password: string;
+  boatsPositioned: boolean;
+  turn: boolean;
+  win: number;
+  losses: number;
+}

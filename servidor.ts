@@ -1,100 +1,170 @@
 import net, { Socket } from 'net';
+import { User }  from './classe/Client'
+import { getUserByNicknameAndPassword, insertUser } from './database';
+import { once } from 'events';
 
-interface Client {
-   socket: Socket;
-   nickname: string;
-   boatsPositioned: boolean;
-   board?: string;
-   turn?: boolean;
+let users: User[] = [] 
+let sockets: string[] = []
+let playersReady: Socket[] = []
+
+
+/*
+   1. Visualização do tabuleiro
+   2. Criação da classe Partida de Batalha Naval
+      - tabuleiro player 1
+      - tabuleiro player 2 
+      - nickname player 1
+      - nickname player 2
+      - turno
+   3. 
+
+
+*/
+
+
+
+
+
+
+
+function getUserBySocket(socket: Socket) {
+   const index = sockets.indexOf(`${socket.remoteAddress}:${socket.remotePort}`)
+   return users[index]
 }
 
-const clients: { [key: string]: Client } = {};
+function disconnectUser(socket: Socket){
+   const index = sockets.indexOf(`${socket.remoteAddress}:${socket.remotePort}`)
+   sockets.splice(index, 1)
+   users.splice(index, 1)
+}
+
+
 
 const server = net.createServer((socket: Socket) => {
    console.log('Client connected:', socket.remoteAddress, socket.remotePort);
 
-
-   socket.on('data', (data: Buffer) => {
+   socket.on('data', async (data: Buffer) => {
       const message = data.toString().trim();
+      const [action, ...params] = message.split(' ') 
 
-      if (!clients[`${socket.remoteAddress}:${socket.remotePort}`]?.nickname) {
-         // Se o cliente ainda não tiver enviado o seu nickname, armazenamos a informação
-         clients[`${socket.remoteAddress}:${socket.remotePort}`] = { socket, nickname: message, boatsPositioned: false };
-         console.log(`Client ${socket.remoteAddress}:${socket.remotePort} identified as ${message}`);
-         socket.write(`Welcome, ${message}!\n`);
-      } else if (!clients[`${socket.remoteAddress}:${socket.remotePort}`]?.boatsPositioned) {
-         // Se o cliente já tiver enviado o seu nickname, mas ainda não tiver informado a posição dos barcos, pedimos a informação
-         console.log(`Received boats position from ${clients[`${socket.remoteAddress}:${socket.remotePort}`].nickname}: ${message}`);
+      let user: User | null = null
 
-         // Armazenar a posição dos barcos no objeto do jogador
-         clients[`${socket.remoteAddress}:${socket.remotePort}`].boatsPositioned = true;
-
-         startGame()
-      } else {
-         // Se o cliente já tiver enviado o seu nickname e a posição dos barcos, consideramos a mensagem como uma jogada
-         console.log(`Received move from ${clients[`${socket.remoteAddress}:${socket.remotePort}`].nickname}: ${message}`);
-         // Armazenar o tabuleiro no banco de dados aqui
+      if(action != 'Register' && action != 'Login') {
+         user = getUserBySocket(socket)   
       }
+
+
+      if (action == 'Register') {
+         const [action, nickname, password] = message.split(' ')
+         insertUser(nickname, password)
+
+         user = await getUserByNicknameAndPassword(nickname, password)
+
+         if(user){
+            users.push(user)
+            sockets.push(`${socket.remoteAddress}:${socket.remotePort}`)
+         } 
+
+         socket.write(`Welcome, ${nickname}!\n`);
+
+      } else if (action == 'Login') {
+         const [action, nickname, password] = message.split(' ')
+
+         user = await getUserByNicknameAndPassword(nickname, password)
+         
+         if(user){
+            users.push(user)
+            sockets.push(`${socket.remoteAddress}:${socket.remotePort}`)
+         } 
+
+         socket.write(`PositionBoats ${user?.nickname}!\n`);
+      }
+      
+      if(user) {
+         if (action == 'PositionBoats') {
+            // Se o cliente já tiver enviado o seu nickname, mas ainda não tiver informado a posição dos barcos, pedimos a informação
+            user.boatsPositioned = true
+
+            console.log(`Received boats position from ${user.nickname}: ${message}`);
+
+
+            playersReady.push(socket)
+            
+            if(playersReady.length == 2){
+               startGame(playersReady)
+               playersReady = []
+            } else {
+               socket.write(`Waiting for players`)
+            }
+
+         }
+
+
+         
+
+      }
+
    });
 
    socket.on('end', () => {
       console.log('Client disconnected:', socket.remoteAddress, socket.remotePort);
       // Removemos o cliente da lista de players conectados
-      delete clients[`${socket.remoteAddress}:${socket.remotePort}`];
+      disconnectUser(socket)
    });
 
 
 
 });
 
-function startGame() {
-   // Verifica se ambos os jogadores já informaram a posição dos barcos
-   const playersReady = Object.keys(clients).filter(client => clients[client].boatsPositioned).length === 2;
-   
-   if (playersReady) {
-     console.log('Both players are ready to play. Starting the game!');
-     let currentPlayer = 1;
- 
-     Object.keys(clients).forEach(client => {
-       const { socket } = clients[client];
-       socket.on('data', (data: Buffer) => {
-         const move = data.toString().trim();
 
-         console.log(`Player ${clients[client].nickname} played: ${move}`);
+async function startGame(playersReady: Socket[]) {
 
-         if (currentPlayer === 1 && client === Object.keys(clients)[0]) {
-           // É a vez do jogador 1 jogar
-           clients[client].turn = false;
-           clients[Object.keys(clients)[1]].turn = true;
-           socket.write('Your turn to play. Enter your move: ');
-           currentPlayer = 2;
-         } else if (currentPlayer === 2 && client === Object.keys(clients)[1]) {
-           clients[client].turn = false;
-           clients[Object.keys(clients)[0]].turn = true;
-           socket.write('Your turn to play. Enter your move: ');
-           currentPlayer = 1;
-         } else {
-           // Jogada inválida, não é a vez do jogador
-           socket.write('Wait for your turn to play.\n');
-         }
-       });
-     });
+   console.log('Jogo começou')
+
+   const player1 = getUserBySocket(playersReady[0]);
+   const player2 = getUserBySocket(playersReady[1]);
  
-     // Define a vez do jogador 1
-     clients[Object.keys(clients)[0]].turn = true;
-     clients[Object.keys(clients)[1]].turn = false;
+   // Sorteia o jogador que começa o jogo
+   const startingPlayerIndex = Math.floor(Math.random() * 2);
+
+   let currentPlayerSocket = startingPlayerIndex === 0 ? playersReady[0] : playersReady[1];
+   let opponentSocket = startingPlayerIndex === 0 ? playersReady[1] : playersReady[0];
  
-     // Envia a mensagem para o jogador 1 iniciar o jogo
-     clients[Object.keys(clients)[0]].socket.write('Let the game begin! You play first. Enter your move: ');
-   } else {
-     // Se ambos os jogadores não tiverem informado a posição dos barcos, adiciona um tempo de espera e chama novamente a função startGame
-     console.log('Waiting for both players to position their boats...');
-     setTimeout(() => {
-       process.nextTick(startGame);
-     }, 1000);
+   let currentPlayer = startingPlayerIndex === 0 ? player1 : player2;
+   let opponent = startingPlayerIndex === 0 ? player2 : player1;
+
+   while (true) {
+     // Pede ao jogador atual que escolha uma posição para atacar
+
+     currentPlayerSocket.write(`Attack ${opponent.nickname}\n`);
+     const data = await once(currentPlayerSocket, 'data');
+     const [x, y] = data.toString().trim().split(' ');
+
+      console.log('Movimento recebido do jogador atual', currentPlayer.nickname)
+     console.log(x, y)
+      
+   //   // Realiza o ataque e verifica se o jogador perdeu
+   //   const attackResult = game.attack(opponent.nickname, parseInt(x), parseInt(y));
+   //   currentPlayerSocket.write(attackResult + '\n');
+   //   opponentSocket.write(`OpponentAttack ${x} ${y}\n`);
+ 
+   //   if (game.hasPlayerLost(opponent.nickname)) {
+   //     currentPlayerSocket.write('You won!\n');
+   //     opponentSocket.write('You lost!\n');
+   //     break;
+   //   }
+ 
+     // Troca o jogador atual e o oponente
+     let temp = currentPlayer;
+     currentPlayer = opponent;
+     opponent = temp;
+
+     let intermediario = currentPlayerSocket;
+     currentPlayerSocket = opponentSocket;
+     opponentSocket = intermediario;
    }
  }
-  
+
 
 server.listen(3000, () => {
    console.log('Server started');
