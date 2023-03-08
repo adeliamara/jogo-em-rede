@@ -8,6 +8,7 @@ let nickname = '';
 let password = '';
 let boatsPositioned = false
 
+
 client.connect(3000, 'localhost', () => {
   console.log('Connected to server');
 

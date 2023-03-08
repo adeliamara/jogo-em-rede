@@ -24,7 +24,9 @@ async function createTable() {
         boatsPositioned BOOLEAN NOT NULL DEFAULT FALSE,
         turn BOOLEAN NOT NULL DEFAULT FALSE,
         win INTEGER NOT NULL DEFAULT 0,
-        losses INTEGER NOT NULL DEFAULT 0
+        losses INTEGER NOT NULL DEFAULT 0,
+        remoteAddress TEXT DEFAULT NULL,
+        remotePort INTEGER DEFAULT NULL
     )
 `);
 
@@ -51,7 +53,7 @@ export async function insertUser(nickname: string, password: string): Promise<vo
     const db = new sqlite3.Database('./mydatabase.db');
 
     const sql = `
-      INSERT INTO users (nickname, password, boatsPositioned, turn, win, losses)
+      INSERT INTO users (nickname, password, boatsPositioned, turn, win, losses )
       VALUES (?, ?, ?, ?, ?, ?)
     `;
 
@@ -97,6 +99,8 @@ export async function getUserByNicknameAndPassword(nickname: string, password: s
           turn: !!row.turn,
           win: row.win,
           losses: row.losses,
+          remoteAddress: row.remoteAddress,
+          remotePort: row.remotePort  
         };
         resolve(user);
       }

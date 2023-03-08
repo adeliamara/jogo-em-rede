@@ -1,3 +1,5 @@
+import { Socket } from "net";
+
 export interface User {
   user_id: number;
   nickname: string;
@@ -6,4 +8,6 @@ export interface User {
   turn: boolean;
   win: number;
   losses: number;
+  remoteAddress: string | undefined;
+  remotePort: number | undefined;
 }
