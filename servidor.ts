@@ -46,7 +46,7 @@ const server = net.createServer((socket: Socket) => {
    console.log('Client connected:', socket.remoteAddress, socket.remotePort);
 
    socket.on('data', async (data: Buffer) => {
-      const message = data.toString().trim();
+      const message = data.toString();
       const [action, ...params] = message.split(' ') 
 
       let user: User | null = null
@@ -59,7 +59,7 @@ const server = net.createServer((socket: Socket) => {
 
       if (action == 'Register') { //tem algum erro
          const [action, nickname, password] = message.split(' ')
-         insertUser(nickname, password)
+   
 
          user = await getUserByNicknameAndPassword(nickname, password, socket)
 
@@ -68,9 +68,24 @@ const server = net.createServer((socket: Socket) => {
 
             users.push(user)
             sockets.push(`${socket.remoteAddress}:${socket.remotePort}`)
-         } 
+            user.socket.write(`Welcome, ${nickname}!\n`);
 
-         socket.write(`Welcome, ${nickname}!\n`);
+
+         } else{
+            await insertUser(nickname, password)
+            user = await getUserByNicknameAndPassword(nickname, password, socket)
+
+            if(user){
+
+               user.socket = socket
+   
+               users.push(user)
+               sockets.push(`${socket.remoteAddress}:${socket.remotePort}`)
+               user.socket.write(`Welcome, ${nickname}!\n`);
+
+            }
+         }
+         
 
       } else if (action == 'Login') {
          const [action, nickname, password] = message.split(' ')
@@ -81,19 +96,19 @@ const server = net.createServer((socket: Socket) => {
             user.socket = socket
             users.push(user)
             sockets.push(`${socket.remoteAddress}:${socket.remotePort}`)
+            
+            user.socket.write(`Welcome, ${nickname}!\n`);
          } 
 
-         console.log(user)
-         socket.write(`PositionBoats ${user?.nickname}!\n`);
       }
       
       if(user) {
          if (action == 'PositionBoats') {
             // Se o cliente já tiver enviado o seu nickname, mas ainda não tiver informado a posição dos barcos, pedimos a informação
             user.boatsPositioned = true
-            positionBoats.push(params[0])
+            positionBoats.push(...params)
 
-            console.log(`Received boats position from ${user.nickname}: ${params[0]}`);
+            console.log(`Received boats position from ${user.nickname}: ${params}`);
 
             playersReady.push(socket)
             
@@ -138,7 +153,16 @@ async function startGame(playersReady: Socket[], positionBoats: string[]) {
    let currentPlayer = startingPlayerIndex === 0 ? player1 : player2;
    let opponent = startingPlayerIndex === 0 ? player2 : player1;
 
-   const battleShipGame = new BattleShipGame(currentPlayer, opponent, positionBoats[0], positionBoats[1], currentPlayer)
+   const stringArray = positionBoats.join('*');
+
+   const [positionBoats1, positionBoats2] =  stringArray.split("**")
+
+
+   console.log(positionBoats1)
+   console.log(positionBoats2)
+   
+
+   const battleShipGame = new BattleShipGame(currentPlayer, opponent, positionBoats1, positionBoats2, currentPlayer)
 
    while (true) {
      // Pede ao jogador atual que escolha uma posição para atacar
@@ -149,8 +173,18 @@ async function startGame(playersReady: Socket[], positionBoats: string[]) {
 
      battleShipGame.attackOpponent(position)
 
-      
+      console.log(battleShipGame.verificarFimDaPartida())
+     if(battleShipGame.verificarFimDaPartida()){
+         break;
+     }
 
+
+     
+     let temp = currentPlayer;
+     currentPlayer = opponent;
+     opponent = temp;
+
+      
 
    }
  }
@@ -159,3 +193,7 @@ async function startGame(playersReady: Socket[], positionBoats: string[]) {
 server.listen(3000, () => {
    console.log('Server started');
 });
+
+
+
+ 

@@ -20,12 +20,12 @@ export class Board{
   // Método privado para criar o tabuleiro
   private createTabuleiroPlayer = () => {
    let tabuleiro = [];
-   let arrayPositions = this.positionBoats.split(' ');
+   let arrayPositions = this.positionBoats.split('*');
    for (let i = 0; i < this.dimension; i++) {
      let row = [];
      for (let j = 0; j < this.dimension; j++) {
       if (arrayPositions.includes(`${i}${j}`)) {
-         row.push('B '); // preencher o tabuleiro com "-" em cada célula
+         row.push('B'); // preencher o tabuleiro com "-" em cada célula
       } else {
          row.push('-'); // preencher o tabuleiro com "-" em cada célula
 
@@ -47,6 +47,7 @@ export class Board{
        }
      tabuleiro.push(row); // adicionar a linha no tabuleiro
    }
+
    return tabuleiro;
    } // retornar o tabuleiro criado
  

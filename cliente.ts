@@ -29,20 +29,19 @@ client.connect(3000, 'localhost', () => {
 });
 
 client.on('data', (data: Buffer) => {
-  const message = data.toString().trim();
+  const message = data.toString();
   const [action, ...params] = message.split(/\s(.+)/); 
+  
 
-  if(action == 'PositionBoats') {
-    console.log(`Welcome, ${params}`);
+  if(action == 'Welcome,') {
     if (!boatsPositioned) {
       let board = ''
 
       console.log('Enter column and line. ex: 01')
-      for (let i = 0; i < 5; i++) {
-        board += prompt('Enter your boats position: ');
+      for (let i = 0; i < 2; i++) {
+        board += prompt('Enter your boats position: ') + ' ';
       }
 
-      console.log(board)
 
       client.write(`PositionBoats ${board}`);
       boatsPositioned = true;
@@ -61,11 +60,13 @@ client.on('data', (data: Buffer) => {
   
 
   if(action == 'PrintPlayer' || action == 'FinalPrint') {    
-      console.log(params[0])
+      console.log(params,'\n')
   }
   
-  if(action == 'PrintOpponent') {    
+  if(action == 'PrintOpponent') {  
+    
     console.log(params[0])
+    console.log(params,'\n')
 
     const attackPosition = prompt('\nDigite uma posição para atacar no board inimigo: ')
 
@@ -74,7 +75,7 @@ client.on('data', (data: Buffer) => {
     console.clear()
   }
   
-  
+
   
   
   /*

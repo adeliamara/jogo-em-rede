@@ -26,7 +26,7 @@ async function createTable() {
         boatsPositioned BOOLEAN NOT NULL DEFAULT FALSE,
         turn BOOLEAN NOT NULL DEFAULT FALSE,
         win INTEGER NOT NULL DEFAULT 0,
-        losses INTEGER NOT NULL DEFAULT 0,
+        losses INTEGER NOT NULL DEFAULT 0
     )
 `);
 

@@ -53,10 +53,11 @@ export class BattleShipGame{
 
     public verificarFimDaPartida = () => {
         if(this._turn.nickname == this._player1.nickname){
-
+            return this._board1.countBoats == 0
         } else {
-
+            return this._board2.countBoats == 0
         }
+
     }
     
 }
