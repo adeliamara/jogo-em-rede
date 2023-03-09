@@ -49,22 +49,22 @@ const server = net.createServer((socket: Socket) => {
       const message = data.toString().trim();
       const [action, ...params] = message.split(' ') 
 
-      let user: User | null | undefined = null
+      let user: User | null = null
+
 
       if(action != 'Register' && action != 'Login') {
          user = getUserBySocket(socket)   
       }
 
 
-      if (action == 'Register') {
+      if (action == 'Register') { //tem algum erro
          const [action, nickname, password] = message.split(' ')
          insertUser(nickname, password)
 
-         user = await getUserByNicknameAndPassword(nickname, password)
+         user = await getUserByNicknameAndPassword(nickname, password, socket)
 
          if(user){
-            user.remoteAddress = socket.remoteAddress;
-            user.remotePort = socket.remotePort;
+            user.socket = socket
 
             users.push(user)
             sockets.push(`${socket.remoteAddress}:${socket.remotePort}`)
@@ -75,15 +75,14 @@ const server = net.createServer((socket: Socket) => {
       } else if (action == 'Login') {
          const [action, nickname, password] = message.split(' ')
 
-         user = await getUserByNicknameAndPassword(nickname, password)
+         user = await getUserByNicknameAndPassword(nickname, password, socket)
          
          if(user){
-            user.remoteAddress = socket.remoteAddress;
-            user.remotePort = socket.remotePort;
-
+            user.socket = socket
             users.push(user)
             sockets.push(`${socket.remoteAddress}:${socket.remotePort}`)
          } 
+
          console.log(user)
          socket.write(`PositionBoats ${user?.nickname}!\n`);
       }
@@ -94,8 +93,7 @@ const server = net.createServer((socket: Socket) => {
             user.boatsPositioned = true
             positionBoats.push(params[0])
 
-            console.log(`Received boats position from ${user.nickname}: ${message}`);
-
+            console.log(`Received boats position from ${user.nickname}: ${params[0]}`);
 
             playersReady.push(socket)
             
@@ -136,46 +134,24 @@ async function startGame(playersReady: Socket[], positionBoats: string[]) {
  
    // Sorteia o jogador que começa o jogo
    const startingPlayerIndex = 0;
-
-   let currentPlayerSocket = startingPlayerIndex === 0 ? playersReady[0] : playersReady[1];
-   let opponentSocket = startingPlayerIndex === 0 ? playersReady[1] : playersReady[0];
  
    let currentPlayer = startingPlayerIndex === 0 ? player1 : player2;
    let opponent = startingPlayerIndex === 0 ? player2 : player1;
 
-
    const battleShipGame = new BattleShipGame(currentPlayer, opponent, positionBoats[0], positionBoats[1], currentPlayer)
-
 
    while (true) {
      // Pede ao jogador atual que escolha uma posição para atacar
 
-     currentPlayerSocket.write(`Attack ${opponent.nickname}\n`);
-     const data = await once(currentPlayerSocket, 'data');
-     const [positions] = data.toString().trim();
+     battleShipGame.showBoards()
+     let attackPosition = await once(currentPlayer.socket, 'data');
+     let position = attackPosition.toString().trim();
 
-      console.log('Movimento recebido do jogador atual', currentPlayer.nickname)
+     battleShipGame.attackOpponent(position)
 
       
-   //   // Realiza o ataque e verifica se o jogador perdeu
-   //   const attackResult = game.attack(opponent.nickname, parseInt(x), parseInt(y));
-   //   currentPlayerSocket.write(attackResult + '\n');
-   //   opponentSocket.write(`OpponentAttack ${x} ${y}\n`);
- 
-   //   if (game.hasPlayerLost(opponent.nickname)) {
-   //     currentPlayerSocket.write('You won!\n');
-   //     opponentSocket.write('You lost!\n');
-   //     break;
-   //   }
- 
-     // Troca o jogador atual e o oponente
-     let temp = currentPlayer;
-     currentPlayer = opponent;
-     opponent = temp;
 
-     let intermediario = currentPlayerSocket;
-     currentPlayerSocket = opponentSocket;
-     opponentSocket = intermediario;
+
    }
  }
 

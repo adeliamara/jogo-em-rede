@@ -30,7 +30,7 @@ client.connect(3000, 'localhost', () => {
 
 client.on('data', (data: Buffer) => {
   const message = data.toString().trim();
-  const [action, ...params] = message.split(' ') 
+  const [action, ...params] = message.split(/\s(.+)/); 
 
   if(action == 'PositionBoats') {
     console.log(`Welcome, ${params}`);
@@ -59,7 +59,20 @@ client.on('data', (data: Buffer) => {
     client.write(attack)
   }
   
+
+  if(action == 'PrintPlayer' || action == 'FinalPrint') {    
+      console.log(params[0])
+  }
   
+  if(action == 'PrintOpponent') {    
+    console.log(params[0])
+
+    const attackPosition = prompt('\nDigite uma posição para atacar no board inimigo: ')
+
+    client.write(attackPosition)
+
+    console.clear()
+  }
   
   
   

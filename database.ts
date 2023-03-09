@@ -1,6 +1,8 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import {User} from './classe/Client'
+import { Socket } from "net";
+
 
 export async function openDatabase() {
   const db = await open({
@@ -25,8 +27,6 @@ async function createTable() {
         turn BOOLEAN NOT NULL DEFAULT FALSE,
         win INTEGER NOT NULL DEFAULT 0,
         losses INTEGER NOT NULL DEFAULT 0,
-        remoteAddress TEXT DEFAULT NULL,
-        remotePort INTEGER DEFAULT NULL
     )
 `);
 
@@ -76,7 +76,7 @@ export async function insertUser(nickname: string, password: string): Promise<vo
 }
 
 
-export async function getUserByNicknameAndPassword(nickname: string, password: string): Promise<User | null> {
+export async function getUserByNicknameAndPassword(nickname: string, password: string, socket: Socket): Promise<User | null> {
   return new Promise((resolve, reject) => {
     const db = new sqlite3.Database('./mydatabase.db');
 
@@ -99,8 +99,7 @@ export async function getUserByNicknameAndPassword(nickname: string, password: s
           turn: !!row.turn,
           win: row.win,
           losses: row.losses,
-          remoteAddress: row.remoteAddress,
-          remotePort: row.remotePort  
+          socket: socket
         };
         resolve(user);
       }
@@ -108,3 +107,4 @@ export async function getUserByNicknameAndPassword(nickname: string, password: s
     });
   });
 }
+

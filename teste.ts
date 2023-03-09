@@ -1,28 +1,12 @@
-const printTabuleiroOpponent = () => {
-    let line = '';
-    let arrayPositions = '11 22 33 44'.split(' ')
-  
-  
-    for (let i = 0; i < 8; i++) {
-        for (let j = 0; j < 8; j++) {
-          if (j !== 7) {
-            if (arrayPositions.includes(`${i}${j}`)) {
-              line += 'B ';
-            } else {
-              line += '- ';
-            }
-          } else {
-            if (arrayPositions.includes(`${i}${j}`)) {
-              line += 'B\n';
-            } else {
-              line += '-\n';
-            }
-          }
-        }
-      }
-      console.log(line);
-    };
-    
+const matriz = [[1, 2], [2, 3], [1, 2, 3], [1, 2]];
+const element = [2, 3];
 
+let count = 0;
 
-  printTabuleiroOpponent()
+matriz.forEach((arr) => {
+  if (arr.length === element.length && arr.every((val, index) => val === element[index])) {
+    count++;
+  }
+});
+
+console.log(count); // 2

@@ -4,8 +4,9 @@ import { User } from "./Client";
 export class Board{
     dimension: number;
     positionBoats: string;
-    viewCurrentPlayer:string[][];
-    viewOpponent:string[][];
+    viewCurrentPlayer: string[][];
+    viewOpponent: string[][];
+    countBoats: number = 5;
 
     constructor(positionBoats: string,dimension: number = 10){
       this.positionBoats = positionBoats;
@@ -50,29 +51,29 @@ export class Board{
    } // retornar o tabuleiro criado
  
 
- public printTabuleiroCurrentPlayer= () => {
+ public printTabuleiroCurrentPlayer = () => {
    let line = '';
-   let arrayPositions = this.positionBoats.split(' ');
  
    for (let i = 0; i < this.dimension; i++) {
      for (let j = 0; j < this.dimension; j++) {
-         console.log(this.viewCurrentPlayer[i][j])
+        if(j != this.dimension - 1) line += this.viewCurrentPlayer[i][j] + " "
+        else line += this.viewCurrentPlayer[i][j] + "\n"
      }
    }
-   console.log(line);
+   return line;
  };
 
 
- public printTabuleiroCurrentOpponent= () => {
+ public printTabuleiroOpponent= () => {
    let line = '';
-   let arrayPositions = this.positionBoats.split(' ');
  
    for (let i = 0; i < this.dimension; i++) {
      for (let j = 0; j < this.dimension; j++) {
-         console.log(this.viewOpponent[i][j])
+        if(j != this.dimension - 1) line += this.viewOpponent[i][j] + " "
+        else line += this.viewOpponent[i][j] + "\n"
      }
    }
-   console.log(line);
+   return line;
  };
  
  public receberAttack = (position: string) => {
@@ -83,12 +84,16 @@ export class Board{
    if(this.viewCurrentPlayer[x][y] == 'B'){
       this.viewOpponent[x][y] = 'x'
       this.viewCurrentPlayer[x][y] = 'x'
+      this.countBoats -= 1
    } else {
       this.viewOpponent[x][y] = 'o'
-      this.viewCurrentPlayer[x][y] = 'x'
+      this.viewCurrentPlayer[x][y] = 'o'
    }
 
  };
+
+
+ 
 
 
 
