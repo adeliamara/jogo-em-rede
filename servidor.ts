@@ -51,6 +51,8 @@ const server = net.createServer((socket: Socket) => {
 
       let user: User | null = null
 
+      console.log("action: ", action)
+
 
       if(action != 'Register' && action != 'Login') {
          user = getUserBySocket(socket)   
@@ -166,15 +168,18 @@ async function startGame(playersReady: Socket[], positionBoats: string[]) {
 
    while (true) {
      // Pede ao jogador atual que escolha uma posição para atacar
-
+    
      battleShipGame.showBoards()
+     console.log("veio aqui")
      let attackPosition = await once(currentPlayer.socket, 'data');
      let position = attackPosition.toString().trim();
+     console.log(position)
 
      battleShipGame.attackOpponent(position)
 
-      console.log(battleShipGame.verificarFimDaPartida())
      if(battleShipGame.verificarFimDaPartida()){
+         player1.socket.end()
+         player2.socket.end()
          break;
      }
 

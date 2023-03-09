@@ -6,9 +6,9 @@ export class Board{
     positionBoats: string;
     viewCurrentPlayer: string[][];
     viewOpponent: string[][];
-    countBoats: number = 5;
+    countBoats: number = 2;
 
-    constructor(positionBoats: string,dimension: number = 10){
+    constructor(positionBoats: string,dimension: number = 5){
       this.positionBoats = positionBoats;
       this.dimension = dimension;
       this.viewCurrentPlayer = this.createTabuleiroPlayer();
@@ -81,6 +81,8 @@ export class Board{
       
    const x = Number(position[0])
    const y = Number(position[1])
+
+   console.log("esta recebendo ataque em xy ", x, y)
 
    if(this.viewCurrentPlayer[x][y] == 'B'){
       this.viewOpponent[x][y] = 'x'

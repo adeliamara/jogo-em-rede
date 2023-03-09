@@ -59,20 +59,31 @@ client.on('data', (data: Buffer) => {
   }
   
 
-  if(action == 'PrintPlayer' || action == 'FinalPrint') {    
+  if(action == 'PrintPlayer') { 
+      console.log("Meu tabuleiro: ")   
       console.log(params,'\n')
   }
+
+
+  if(action == 'FinalPrint') {
+    console.log("Tabuleiro oponente apos ataque: ")   
+    console.log(params,'\n')
+}
   
-  if(action == 'PrintOpponent') {  
-    
-    console.log(params[0])
+  if(action == 'PrintOpponent') { 
+    console.log("board atual do oponente: ")   
+
     console.log(params,'\n')
 
     const attackPosition = prompt('\nDigite uma posição para atacar no board inimigo: ')
 
     client.write(attackPosition)
 
-    console.clear()
+  }
+
+  if(action == "You"){
+    console.log(params[0])
+    console.log("FIM DO JOGO ACABOU!!!!!!!!!!!!!!!")
   }
   
 
