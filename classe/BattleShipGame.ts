@@ -21,19 +21,15 @@ export class BattleShipGame {
             console.log("atacando board 2")
             this._board2.receberAttack(position)
             this.showBoardsOff()
-            console.log("antes da troca o turno esta com", this._turn.nickname)
 
             this._turn = this._player2
-            console.log("apos a troca o turno esta com", this._turn.nickname)
         } else {
             console.log("atacando board 1")
 
             this._board1.receberAttack(position)
             this.showBoardsOff()
-            console.log("antes da troca o turno esta com", this._turn.nickname)
 
             this._turn = this._player1
-            console.log("apos a troca o turno esta com", this._turn.nickname)
 
         }
     }
@@ -41,13 +37,14 @@ export class BattleShipGame {
     public showBoards = () => {
 
         if (this._turn.nickname == this._player1.nickname) {
-            console.log("o turno esta com", this._turn.nickname)
             this._turn.socket.write(`PrintPlayer ${this._board1.printTabuleiroCurrentPlayer()}`)
+            console.log('Tabuleiro enviado para usuario')
             this._turn.socket.write(`PrintOpponent ${this._board2.printTabuleiroOpponent()}`)
         } else {
-            console.log("o turno esta com", this._turn.nickname)
 
             this._turn.socket.write(`PrintPlayer ${this._board2.printTabuleiroCurrentPlayer()}`)
+            console.log('Tabuleiro enviado para usuario')
+
             this._turn.socket.write(`PrintOpponent ${this._board1.printTabuleiroOpponent()}`)
         }
 
