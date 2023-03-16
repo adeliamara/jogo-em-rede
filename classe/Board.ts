@@ -13,7 +13,6 @@ export class Board{
       this.dimension = dimension;
       this.viewCurrentPlayer = this.createTabuleiroPlayer();
       this.viewOpponent = this.createTabuleiroOpponent();
-
     }
 
   

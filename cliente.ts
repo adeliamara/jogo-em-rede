@@ -1,5 +1,7 @@
 import net from 'net';
+import { machine } from 'os';
 import promptSync from 'prompt-sync';
+import { getUserMatches } from './database';
 
 const client = new net.Socket();
 const prompt = promptSync();
@@ -29,24 +31,21 @@ client.on('data', (data: Buffer) => {
     client.write(userInfoString);
   }
   if (action == 'Welcome,') {
-    if (!boatsPositioned) {
-      let board = ''
 
-      console.log('Enter column and line. ex: 01')
-      for (let i = 0; i < 2; i++) {
-        let position = prompt('Enter your boats position: ').trim();
-        while (Number(position[0]) > 4 || Number(position[1]) > 4) {
-          position = prompt('Max dimension is 4. Enter yout boats position:')
-        }
+    let msg: any = showMenu(params)
 
-        board += position + ' ';
-
+    msg.then((msg: string) => {
+      if(msg == 'SendMenu'){
+        client.write(`${msg} ${nickname} ${password}`)
+      }else{
+        client.write(msg);
       }
+       // conteúdo da promessa
+    });
 
 
-      client.write(`PositionBoats ${board}`);
-      boatsPositioned = true;
-    }
+
+    
   }
 
   if (action == 'Waiting') {
@@ -55,7 +54,6 @@ client.on('data', (data: Buffer) => {
 
   if (action == 'Attack') {
     const attack = prompt('Digite um x e um y: ')
-
     client.write(attack)
   }
 
@@ -79,17 +77,17 @@ client.on('data', (data: Buffer) => {
     const attackPosition = prompt('\nDigite uma posição para atacar no board inimigo: ')
 
     client.write(attackPosition)
-
   }
 
   if (action == "You") {
     console.log(params[0])
     console.log("FIM DO JOGO ACABOU!!!!!!!!!!!!!!!")
+    client.write('SendMenu')
   }
 
 });
 
-client.on('close', () => {
+client.on('end', () => {
   console.log('Connection closed');
 });
 
@@ -110,5 +108,61 @@ function getNicknameAndPassword(){
   const userInfoString = `${action} ${nickname} ${password}`
 
   return userInfoString;
+}
 
+function printUserHistory(matchs:any, wins: any, losses: any) {
+
+  const porcentagemVitoria = Number(wins)/(Number(wins)+Number(losses)) * 100
+  console.log(`Histórico de Partidas `)
+  console.log(`Taxa de vitórias: ${porcentagemVitoria} %`)
+//se derrotas e vitorias forem = 0, exiba que a taxa eh zero
+  
+  matchs.forEach((match: any) => {
+      console.log(`${match.id}. ${match.winner} ganhou do ${match.loser}`)
+  });
+}
+function getPositionBoats(){
+  let board = ''
+  
+  console.log('Enter column and line. ex: 01')
+  for (let i = 0; i < 2; i++) {
+    console.log('Digite uma posição em um tabuleiro 5x5')
+    let position = prompt('Enter your boats position: ').trim();
+    while (Number(position[0]) > 4 || Number(position[1]) > 4) {
+      console.log('Digite uma posição em um tabuleiro 5x5')
+      position = prompt('Max dimension is 4. Enter yout boats position:')
+    }
+    board += position + ' ';
+  }
+  return board
+}
+
+
+async function showMenu(params: Array<string>) {
+  console.log('Select an action:\n\t1. Start Game\n\t2.Show History\n\t0.Encerrar conexao')
+  let option = prompt('')
+
+  while (Number(option) > 2 || Number(option) < 0) {
+    console.log('Select an action:\n\t1. Start Game\n\t2.Show History\n\t0.Encerrar conexao')
+    option = prompt('')
+  }
+
+
+  if (option == '2') {
+
+    let [id, vitorias, derrotas] = params[0].split(' ')
+    let matchs = await getUserMatches(Number(id))
+    printUserHistory(matchs, vitorias, derrotas[0])
+    return 'SendMenu'
+  } else if(option == '1'){
+    if (!boatsPositioned) {
+      let board: string = getPositionBoats()
+      boatsPositioned = true;
+      return `PositionBoats ${board}`;
+    } 
+  } else if(option == '0'){
+    client.end()
+  }
+
+  return ' '
 }
