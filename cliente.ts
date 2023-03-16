@@ -93,7 +93,7 @@ client.on('end', () => {
 
 
 function getNicknameAndPassword(){
-
+  console.clear() //adicionado
   const answer = prompt('Already have a account? (y/n): ')
   let action: string = 'Login'
 
@@ -111,15 +111,37 @@ function getNicknameAndPassword(){
 }
 
 function printUserHistory(matchs:any, wins: any, losses: any) {
+  console.clear()
+  if(Number(losses) != 0) {
+    const porcentagemVitoria = Number(wins)/(Number(wins)+Number(losses)) * 100
+    console.log(`=============================================================== `)
+    console.log(`Histórico de Partidas - W/D ${porcentagemVitoria}% `)
+    console.log(`=============================================================== `)
+    console.log(`Você possui ${wins} vitória(s) e ${losses} derrota(s)`)
+    //se derrotas e vitorias forem = 0, exiba que a taxa eh zero
+    
+    matchs.forEach((match: any) => {
+        console.log(`       ${match.id}. ${match.winner} ganhou do ${match.loser}`)
+    });
+  } else if(Number(losses) == 0 && Number(wins) != 0){
+    console.log(`=============================================================== `)
+    console.log(`Histórico de Partidas - W/D 100% `)
+    console.log(`=============================================================== `)
+    console.log(`Você possui ${wins} vitória(s) e ${losses} derrota(s)`)
+        
+    matchs.forEach((match: any) => {
+        console.log(`       ${match.id}. ${match.winner} ganhou do ${match.loser}`)
+    });
+  } else {
+    console.log(`=============================================================== `)
+    console.log(`Histórico de Partidas `)
+    console.log(`=============================================================== `)
+    console.log('Você não possui nenhuma partida jogada')
+  }
 
-  const porcentagemVitoria = Number(wins)/(Number(wins)+Number(losses)) * 100
-  console.log(`Histórico de Partidas `)
-  console.log(`Taxa de vitórias: ${porcentagemVitoria} %`)
-//se derrotas e vitorias forem = 0, exiba que a taxa eh zero
+  prompt('\nPress <enter> to continue')
+
   
-  matchs.forEach((match: any) => {
-      console.log(`${match.id}. ${match.winner} ganhou do ${match.loser}`)
-  });
 }
 function getPositionBoats(){
   let board = ''
@@ -139,22 +161,23 @@ function getPositionBoats(){
 
 
 async function showMenu(params: Array<string>) {
-  console.log('Select an action:\n\t1. Start Game\n\t2.Show History\n\t0.Encerrar conexao')
+  console.clear() //adicionado
+  console.log('Select an action:\n\t1. Start Game\n\t2. Show History\n\t0. Encerrar conexao')
   let option = prompt('')
 
   while (Number(option) > 2 || Number(option) < 0) {
-    console.log('Select an action:\n\t1. Start Game\n\t2.Show History\n\t0.Encerrar conexao')
+    console.log('Select an action:\n\t1. Start Game\n\t2. Show History\n\t0. Encerrar conexao')
     option = prompt('')
   }
 
-
   if (option == '2') {
-
+    console.clear() //adicionado
     let [id, vitorias, derrotas] = params[0].split(' ')
     let matchs = await getUserMatches(Number(id))
     printUserHistory(matchs, vitorias, derrotas[0])
     return 'SendMenu'
   } else if(option == '1'){
+    console.clear() //adicionado
     if (!boatsPositioned) {
       let board: string = getPositionBoats()
       boatsPositioned = true;
