@@ -37,6 +37,8 @@ client.on('data', (data: Buffer) => {
     msg.then((msg: string) => {
       if(msg == 'SendMenu'){
         client.write(`${msg} ${nickname} ${password}`)
+      }else if(msg == 'end'){
+        client.end()
       }else{
         client.write(msg);
       }
@@ -184,8 +186,9 @@ async function showMenu(params: Array<string>) {
       return `PositionBoats ${board}`;
     } 
   } else if(option == '0'){
-    client.end()
+     return 'end'
+  } else {
+    return ' '
   }
 
-  return ' '
 }
