@@ -75,17 +75,12 @@ const server = net.createServer((socket: Socket) => {
             } else {
                socket.write(`Waiting for players`)
             }
-
-
          }
       }
-
-
    });
 
    socket.on('end', () => {
       console.log('Client disconnected:', socket.remoteAddress, socket.remotePort);
-      // Removemos o cliente da lista de players conectados
       disconnectUser(socket)
    });
 });
